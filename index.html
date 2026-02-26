@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kamiq Detailing Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        skoda: {
+                            blue: '#0055A4', /* Race Blue Metallic */
+                            dark: '#111827',
+                            card: '#1f2937'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f1115;
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .view-section {
+            display: none !important;
+            animation: fadeIn 0.3s ease-in-out;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+        .view-section.active {
+            display: block !important;
+        }
+        #wash.view-section.active {
+            display: flex !important;
+            flex-direction: column;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .bottom-bar {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .timer-circle {
+            transition: stroke-dashoffset 1s linear;
+        }
+        /* Custom Scrollbar for sleekness */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative">
+
+    <!-- Header -->
+    <header class="bg-skoda-card border-b border-gray-800 sticky top-0 z-50 shadow-md">
+        <div class="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-car-side text-skoda-blue text-xl"></i>
+                <h1 class="font-bold text-lg tracking-wide">Monte Carlo Detailer</h1>
+            </div>
+            <button id="home-btn" class="text-gray-400 hover:text-white transition-colors" onclick="switchView('home')">
+                <i class="fa-solid fa-house text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 w-full max-w-md mx-auto relative">
+
+        <!-- ================= HOME VIEW ================= -->
+        <div id="home" class="view-section active px-4 py-6 space-y-6">
+            <div class="bg-gradient-to-br from-skoda-blue to-blue-900 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden">
+                <div class="relative z-10" id="home-content">
+                    <h2 class="text-2xl font-bold mb-2" id="home-greeting">Ready to Clean?</h2>
+                    <p class="text-sm opacity-90 mb-6" id="home-subtitle">Select your detailing mode below.</p>
+                    
+                    <!-- Action Buttons Container (Dynamically Populated) -->
+                    <div class="space-y-3" id="home-action-buttons">
+                        <!-- Populated by JS renderHomeActions() -->
+                    </div>
+                </div>
+                <i class="fa-solid fa-wand-magic-sparkles absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="switchView('arsenal')" class="bg-skoda-card p-4 rounded-xl border border-gray-800 flex flex-col items-center justify-center gap-3 active:bg-gray-800 transition-colors shadow-sm">
+                    <div class="bg-gray-800 p-3 rounded-full text-blue-400">
+                        <i class="fa-solid fa-spray-can text-xl"></i>
+                    </div>
+                    <span class="font-semibold text-sm">My Arsenal</span>
+                </button>
+                <button onclick="switchView('methods')" class="bg-skoda-card p-4 rounded-xl border border-gray-800 flex flex-col items-center justify-center gap-3 active:bg-gray-800 transition-colors shadow-sm">
+                    <div class="bg-gray-800 p-3 rounded-full text-yellow-400">
+                        <i class="fa-solid fa-book-open text-xl"></i>
+                    </div>
+                    <span class="font-semibold text-sm">Rules & Tips</span>
+                </button>
+            </div>
+
+            <!-- Secondary Utility Button -->
+            <button onclick="startAlloyQA()" class="w-full bg-skoda-card p-4 rounded-xl border border-gray-800 flex items-center justify-between active:bg-gray-800 transition-colors shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gray-800 p-3 rounded-full text-gray-400">
+                        <i class="fa-solid fa-dharmachakra text-lg"></i>
+                    </div>
+                    <div class="text-left">
+                        <span class="font-semibold text-sm block text-gray-200">Alloy Touch Up Guide</span>
+                        <span class="text-xs text-gray-500">Surface scratch repair tool</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-gray-600"></i>
+            </button>
+        </div>
+
+        <!-- ================= ALLOY QA VIEW ================= -->
+        <div id="alloy-qa" class="view-section px-4 py-6 space-y-6">
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-blue-400"></i> Scratch Assessment
+            </h2>
+            <p class="text-gray-300 text-sm">Diamond cut alloys have a delicate clear coat. Answer honestly to ensure you don't permanently damage the wheel.</p>
+
+            <div class="bg-skoda-card rounded-2xl p-6 border border-gray-800 shadow-xl relative">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-wide" id="qa-counter">Question 1 of 4</span>
+                <h3 class="text-xl font-bold text-white mt-2 mb-6" id="qa-question">Question goes here?</h3>
+                
+                <div class="space-y-3">
+                    <button onclick="handleQAAnswer(true)" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 rounded-xl border border-gray-700 transition-colors flex justify-between items-center px-6">
+                        <span id="qa-yes-text">Yes</span> <i class="fa-solid fa-chevron-right text-gray-500"></i>
+                    </button>
+                    <button onclick="handleQAAnswer(false)" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 rounded-xl border border-gray-700 transition-colors flex justify-between items-center px-6">
+                        <span id="qa-no-text">No</span> <i class="fa-solid fa-chevron-right text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ALLOY RESULT VIEW ================= -->
+        <div id="alloy-result" class="view-section px-4 py-6 space-y-6">
+            <div id="alloy-result-content" class="rounded-2xl p-6 shadow-xl border relative overflow-hidden">
+                <!-- Populated dynamically based on pass/fail -->
+            </div>
+            <button onclick="switchView('home')" class="w-full bg-gray-800 text-white font-bold py-3 rounded-xl border border-gray-700 active:bg-gray-700 transition-colors">
+                Return to Dashboard
+            </button>
+        </div>
+
+        <!-- ================= ARSENAL VIEW ================= -->
+        <div id="arsenal" class="view-section px-4 py-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-box-open text-skoda-blue"></i> Product Guide
+            </h2>
+            <div id="product-list" class="space-y-4">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- ================= METHODS VIEW ================= -->
+        <div id="methods" class="view-section px-4 py-6 space-y-6">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-yellow-500"></i> Crucial Rules
+            </h2>
+            
+            <div class="bg-skoda-card p-5 rounded-xl border border-gray-800">
+                <h3 class="font-bold text-lg text-blue-400 mb-2">The Two-Bucket Method</h3>
+                <p class="text-sm text-gray-300 mb-3">Never dip a dirty mitt into clean soapy water.</p>
+                <ul class="text-sm text-gray-400 space-y-2 list-disc pl-4">
+                    <li><strong>Bucket 1 (Wash):</strong> Water + Autoglym UHD Shampoo.</li>
+                    <li><strong>Bucket 2 (Rinse):</strong> Plain cold water.</li>
+                    <li>Wipe a panel -> Scrub mitt in Rinse Bucket -> Wring out -> Dip in Wash Bucket -> Next panel.</li>
+                </ul>
+            </div>
+
+            <div class="bg-skoda-card p-5 rounded-xl border border-red-900/50">
+                <h3 class="font-bold text-lg text-red-400 mb-2">Diamond Cut Alloys Warning</h3>
+                <p class="text-sm text-gray-300 mb-3">18" Ursa alloys have a lacquered clear coat over raw metal.</p>
+                <ul class="text-sm text-gray-400 space-y-2 list-disc pl-4">
+                    <li><strong>Safe:</strong> Autoglym All Wheel Cleaner is pH neutral and 100% safe.</li>
+                    <li><strong>Scratches:</strong> Super Resin Polish only fixes light clear coat scuffs. If it hits grey metal, DO NOT polish it. It requires professional re-lathe.</li>
+                </ul>
+            </div>
+
+            <div class="bg-skoda-card p-5 rounded-xl border border-gray-800">
+                <h3 class="font-bold text-lg text-purple-400 mb-2">Microfibre Separation</h3>
+                <ul class="text-sm text-gray-400 space-y-2 list-disc pl-4">
+                    <li><strong>Turtle Wax Mitt:</strong> WHEELS ONLY.</li>
+                    <li><strong>Halfords Advanced Mitt:</strong> PAINT ONLY.</li>
+                    <li><strong>Autoglym Finishing:</strong> Buffing polish/ceramic ONLY.</li>
+                    <li><strong>URAQT / Brabantia:</strong> Spreading ceramic, Detailer.</li>
+                    <li><strong>Turtle Wax/Spontex:</strong> Glass, Interiors, Tyres.</li>
+                </ul>
+            </div>
+
+            <div class="bg-skoda-card p-5 rounded-xl border border-gray-800">
+                <h3 class="font-bold text-lg text-green-400 mb-2">Hose Management</h3>
+                <ul class="text-sm text-gray-400 space-y-2 list-disc pl-4">
+                    <li><strong>Walk First:</strong> Pull the empty hose to the car <em>before</em> turning on the tap.</li>
+                    <li><strong>Tap Pressure:</strong> Turn the wall tap fully on, then a half-turn back.</li>
+                    <li><strong>The Shoulder Trick:</strong> Drape the hose over your shoulder when walking around the car to keep it off the paint.</li>
+                    <li><strong>The Tyre Trap:</strong> Tuck old towels under the tyre corners so the hose glides past smoothly.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ================= ACTIVE WASH VIEW ================= -->
+        <div id="wash" class="view-section px-4 py-6 min-h-[80vh]">
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-800 h-2 rounded-full mb-6 overflow-hidden relative">
+                <div id="wash-progress" class="bg-skoda-blue h-full transition-all duration-300" style="width: 10%"></div>
+            </div>
+
+            <!-- Step Content -->
+            <div class="flex-1 bg-skoda-card rounded-2xl p-5 border border-gray-800 shadow-xl mb-6 relative">
+                <span id="step-counter" class="absolute -top-3 left-4 bg-gray-900 text-gray-400 text-xs font-bold px-3 py-1 rounded-full border border-gray-700">Step 1 of 9</span>
+                
+                <h2 id="step-title" class="text-2xl font-bold mt-2 mb-4 text-white">Title</h2>
+                
+                <!-- Products Used Chips -->
+                <div id="step-products" class="flex flex-wrap gap-2 mb-5">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Instructions -->
+                <div id="step-desc" class="text-gray-300 text-base leading-relaxed space-y-3 mb-6">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Warning Box (Optional) -->
+                <div id="step-warning" class="hidden bg-red-900/20 border border-red-900/50 rounded-lg p-3 text-red-200 text-sm mb-6 flex gap-3 items-start">
+                    <i class="fa-solid fa-circle-exclamation mt-1 text-red-500"></i>
+                    <span id="step-warning-text">Warning text</span>
+                </div>
+
+                <!-- Timer UI (Optional) -->
+                <div id="timer-container" class="hidden bg-gray-900 rounded-xl p-4 border border-gray-700 flex flex-col items-center justify-center mb-4">
+                    <div class="text-3xl font-mono font-bold text-white mb-3" id="timer-display">03:00</div>
+                    <div class="flex gap-3 w-full">
+                        <button id="timer-btn" onclick="toggleTimer()" class="flex-1 bg-skoda-blue text-white py-2 rounded-lg font-bold active:bg-blue-700 flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-play" id="timer-icon"></i> <span id="timer-btn-text">Start Timer</span>
+                        </button>
+                        <button onclick="resetTimer()" class="bg-gray-700 text-white px-4 py-2 rounded-lg active:bg-gray-600">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wash Controls (Fixed Bottom) -->
+            <div class="fixed bottom-0 left-0 w-full bg-skoda-card border-t border-gray-800 bottom-bar z-40 p-4 pb-8">
+                <div class="max-w-md mx-auto flex gap-3">
+                    <button id="prev-btn" onclick="prevStep()" class="bg-gray-800 text-white px-5 py-3 rounded-xl font-bold active:bg-gray-700 disabled:opacity-50">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <button id="next-btn" onclick="nextStep()" class="flex-1 bg-white text-skoda-dark px-5 py-3 rounded-xl font-bold active:bg-gray-200 flex justify-center items-center gap-2 text-lg">
+                        Next Step <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= CANCEL MODAL ================= -->
+        <div id="cancel-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+            <div class="bg-skoda-card border border-gray-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-red-500"></i> End Session?
+                </h3>
+                <p class="text-gray-300 text-sm mb-6">Are you sure you want to end the current cleaning session? Your progress will be lost.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeCancelModal()" class="flex-1 bg-gray-800 text-white font-bold py-3 rounded-xl active:bg-gray-700 transition-colors">Cancel</button>
+                    <button onclick="executeCancelWash()" class="flex-1 bg-skoda-blue text-white font-bold py-3 rounded-xl active:bg-blue-700 transition-colors">End Session</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- Data Definitions ---
+
+        const products = [
+            { brand: "Autoglym", name: "UHD Shampoo", icon: "fa-soap", type: "Paint", desc: "Pure, high-foaming pH-neutral soap. Leaves paint bare for ceramic spray.", dos: "Use 2 capfuls in 20L Wash Bucket.", donts: "Never apply to dry paint." },
+            { brand: "Autoglym", name: "Advanced All Wheel Cleaner", icon: "fa-dharmachakra", type: "Wheels", desc: "Color-changing, pH-neutral iron fallout remover. Safe for diamond cut alloys.", dos: "Spray on dry, cool wheels. Let dwell 3-5 mins.", donts: "Do not let it dry on the wheel." },
+            { brand: "Autoglym", name: "Super Resin Polish", icon: "fa-wand-magic-sparkles", type: "Paint", desc: "Fills minor swirls and scuffs in the clear coat.", dos: "Apply every 3-6 months. Buff off after 10-15 min haze.", donts: "Do not use on raw metal alloy scratches." },
+            { brand: "Autoglym", name: "Rapid Ceramic Spray", icon: "fa-shield-halved", type: "Paint", desc: "Durable hydrophobic armor. Apply every 2-3 months.", dos: "Spray 1-2 spritzes per DRY panel. Buff immediately.", donts: "Do not use on glass or let it air dry (will streak)." },
+            { brand: "Autoglym", name: "Instant Tyre Dressing", icon: "fa-circle-notch", type: "Wheels", desc: "Restores deep black look to tyre walls.", dos: "Apply to dry tyres. Wipe for matte, air dry for gloss.", donts: "Keep off alloy faces and paint." },
+            { brand: "Autoglym", name: "Fast Glass", icon: "fa-window-maximize", type: "Glass", desc: "Abrasive-free, streak-free window cleaner.", dos: "Use inside and out with Turtle Wax cloths.", donts: "Don't use on infotainment screens." },
+            { brand: "Autoglym", name: "Interior Shampoo & Vinyl Care", icon: "fa-car-side", type: "Interior", desc: "Deep cleans fabrics and dresses plastics.", dos: "Spray Vinyl care on cloth, not dashboard.", donts: "Don't spray near interior windscreen." },
+            { brand: "Hardware", name: "Halfords 20L Buckets & Guards", icon: "fa-bucket", type: "Prep", desc: "The foundation of safe washing.", dos: "Use Two-Bucket method. Scrub mitt on grit guard.", donts: "Never wash without the rinse bucket." },
+            { brand: "Hardware", name: "Wash Mitts", icon: "fa-mitten", type: "Prep", desc: "Safe dirt removal.", dos: "Halfords Plush = Paint. Turtle Wax = Wheels ONLY.", donts: "Never cross-contaminate." },
+            { brand: "Hardware", name: "Cloths & Towels", icon: "fa-rug", type: "Prep", desc: "Turtle Wax Drying Towel, Autoglym Finishing, URAQT/Brabantia.", dos: "Pat or drag drying towel. Dedicate Autoglym cloths to buffing only.", donts: "Never wash with fabric softener." },
+            { brand: "Hardware", name: "Hozelock & Restmo Gun", icon: "fa-shower", type: "Prep", desc: "30m PVC Hose and Metal Spray Gun.", dos: "Unroll completely before turning on. Drain pressure when finished.", donts: "Never drag hard against the clear coat." }
+        ];
+
+        const exteriorSteps = [
+            {
+                title: "Hose Setup & Mains Water",
+                products: ["Hozelock Hose", "Restmo Gun"],
+                desc: "<p>1. Unroll the empty hose completely and walk the spray gun over to the car.</p><p>2. Go back to the wall and turn the tap fully ON, then a half-turn back (relieves pressure).</p><p>3. Squeeze the spray gun trigger to bleed out the initial air.</p>",
+                warning: "Never turn on the water while the hose is piled up—it will knot instantly.",
+                timer: null
+            },
+            {
+                title: "Setup & Prep",
+                products: ["Halfords Buckets", "Grit Guards", "UHD Shampoo"],
+                desc: "<p>1. Place Grit Guards in both buckets.</p><p>2. Fill 'Rinse' bucket with plain cold water.</p><p>3. Pour 2 capfuls of UHD Shampoo into 'Wash' bucket. Blast with hose to create thick foam.</p>",
+                warning: null,
+                timer: null
+            },
+            {
+                title: "Wheels & Tyres First",
+                products: ["All Wheel Cleaner", "Wheel Brush", "Turtle Wax Mitt"],
+                desc: "<p>1. Ensure alloys are cool to the touch.</p><p>2. Spray Wheel Cleaner generously onto dry wheels.</p><p>3. Wait 3 minutes (until it bleeds purple). Agitate with brush/mitt.</p><p>4. Hose off thoroughly.</p>",
+                warning: "Use ONLY the Turtle Wax Mitt here. Keep it away from paint.",
+                timer: 180 // 3 mins
+            },
+            {
+                title: "The Pre-Rinse",
+                products: ["Garden Hose"],
+                desc: "<p>1. Attach spray nozzle to hose.</p><p>2. Blast the entire car from the roof down.</p><p>3. Spend 5 minutes removing all loose grit, mud, and salt.</p>",
+                warning: "Never touch dry paint with a wash mitt. Pre-rinse is critical.",
+                timer: null
+            },
+            {
+                title: "The Contact Wash",
+                products: ["Halfords Wash Mitt", "UHD Shampoo"],
+                desc: "<p>1. Dip the Halfords mitt into soapy Wash bucket.</p><p>2. Wash ONE panel gently from the top down.</p><p>3. Scrub mitt in plain Rinse bucket.</p><p>4. Wring out, dip in Wash bucket, do next panel.</p>",
+                warning: "Keep strokes in straight lines, avoid heavy circular scrubbing.",
+                timer: null
+            },
+            {
+                title: "The Sheeting Rinse",
+                products: ["Garden Hose"],
+                desc: "<p>1. Remove the spray nozzle from your hose.</p><p>2. Let the water cascade gently out of the open pipe over the roof and bonnet.</p><p>3. The water will sheet together and glide off, leaving very little behind.</p>",
+                warning: null,
+                timer: null
+            },
+            {
+                title: "Safe Drying",
+                products: ["Turtle Wax Drying Towel"],
+                desc: "<p>1. Lay towel flat on wet panels.</p><p>2. Hold two corners and slowly pull it across the surface to drag water off.</p><p>3. Gently pat dry any remaining drops or crevices.</p>",
+                warning: "Do not scrub the paint with the towel.",
+                timer: null
+            },
+            {
+                title: "Polish (Optional: 3-6 Months)",
+                products: ["Super Resin Polish", "URAQT Cloth", "Autoglym Finishing Cloth"],
+                desc: "<p><i>Skip if paint is already glossy/swirl-free.</i></p><p>1. Apply pea-sized drop to URAQT cloth.</p><p>2. Work into dry paint in tight circles.</p><p>3. Wait 10 mins to haze, then buff off with Autoglym Finishing Cloth.</p>",
+                warning: "Does not fix deep metal scratches on diamond cut alloys.",
+                timer: 600 // 10 mins
+            },
+            {
+                title: "Ceramic Protection",
+                products: ["Rapid Ceramic Spray", "URAQT Cloth", "Autoglym Finishing Cloth"],
+                desc: "<p>1. Ensure panel is 100% dry.</p><p>2. Spray 1-2 spritzes maximum onto panel.</p><p>3. Spread evenly with URAQT cloth.</p><p>4. IMMEDIATELY buff to high shine with dry Autoglym Finishing Cloth.</p>",
+                warning: "Do not let it air dry. Do not apply to glass.",
+                timer: null
+            },
+            {
+                title: "Glass & Tyres",
+                products: ["Fast Glass", "Instant Tyre Dressing", "Spontex/Turtle Cloths"],
+                desc: "<p>1. Spray Tyre Dressing on dry rubber. Let air dry for gloss, or wipe for matte.</p><p>2. Spray Fast Glass on windows, wipe streak-free with Turtle Wax cloth.</p>",
+                warning: "Keep tyre dressing completely off the lacquered alloy faces.",
+                timer: null
+            }
+        ];
+
+        const interiorSteps = [
+            {
+                title: "Prep & Hoovering",
+                products: ["Vacuum Cleaner"],
+                desc: "<p>1. Remove all trash and pull out the floor mats.</p><p>2. Vacuum the seats, making sure to get into the crevices.</p><p>3. Vacuum the carpets and the boot.</p><p><i>Tip: Move the front seats all the way forward, then all the way back to reach underneath easily.</i></p>",
+                warning: "Always dry-vacuum before applying any liquid cleaners to avoid turning dust into mud.",
+                timer: null
+            },
+            {
+                title: "Delicate Screens",
+                products: ["Ecomoist Cleaner", "Ecomoist Towel"],
+                desc: "<p>1. Spray the Ecomoist cleaner <b>directly onto its included fine microfibre towel</b>.</p><p>2. Gently wipe the central infotainment screen and the digital driver display.</p>",
+                warning: "Never spray liquid directly at the screens. Fluid can seep down into the electronics and destroy them.",
+                timer: null
+            },
+            {
+                title: "Hard Plastics & Dashboard",
+                products: ["Vinyl & Rubber Care", "Spontex / Turtle Cloth"],
+                desc: "<p>1. Spray Vinyl & Rubber Care onto a Spontex or Turtle Wax cloth.</p><p>2. Wipe down the dashboard, centre console, and door cards.</p><p>3. Wipe immediately for a matte factory finish, or leave to dry slightly for a higher gloss.</p>",
+                warning: "Do not spray directly onto the dashboard to prevent messy overspray onto the interior windscreen.",
+                timer: null
+            },
+            {
+                title: "Interior Glass",
+                products: ["Fast Glass", "Turtle Wax Cloth"],
+                desc: "<p>1. Lightly spray Fast Glass onto the interior windows and rear-view mirror.</p><p>2. Wipe away with a clean, dry, dedicated Turtle Wax Clean & Shine cloth for a streak-free finish.</p>",
+                warning: "Done after the dashboard so plastic dressing doesn't accidentally splash onto your clean glass.",
+                timer: null
+            },
+            {
+                title: "Seats & Mats",
+                products: ["Interior Shampoo", "Damp Spontex Cloth"],
+                desc: "<p>1. Spray Interior Shampoo onto any stains on the fabric seats or the removed floor mats.</p><p>2. Agitate gently with a soft brush or cloth.</p><p>3. Wipe away the lifted dirt and foam with a <b>damp</b> Spontex cloth.</p>",
+                warning: "Done late in the process so you aren't sitting on wet seats while trying to clean the dash.",
+                timer: null
+            },
+            {
+                title: "Door Jambs (Sills)",
+                products: ["Rapid Detailer", "Older Demoted Cloth"],
+                desc: "<p>1. Open all the doors.</p><p>2. Spray Rapid Detailer onto the painted metal door sills and jambs.</p><p>3. Wipe away the hidden dirt with an older, demoted cloth (e.g., an old URAQT or Spontex).</p><p><b>Interior Detail Complete!</b></p>",
+                warning: "Use a demoted cloth here, as door jambs hide greasy hinge dirt that ruins good cloths.",
+                timer: null
+            }
+        ];
+
+        const alloySteps = [
+            {
+                title: "Prep & Clean",
+                products: ["All Wheel Cleaner", "Turtle Wax Mitt", "Drying Towel"],
+                desc: "<p>1. Ensure the alloy is completely cool to the touch.</p><p>2. Wash the wheel thoroughly with All Wheel Cleaner.</p><p>3. <b>CRITICAL:</b> Dry the alloy completely. Never polish a dirty or wet wheel, you will grind brake dust into the lacquer.</p>",
+                warning: "Do not proceed if the wheel is still dirty.",
+                timer: null
+            },
+            {
+                title: "Apply Super Resin Polish",
+                products: ["Super Resin Polish", "URAQT / Brabantia Cloth"],
+                desc: "<p>1. Apply a single, pea-sized drop of Polish onto the cloth.</p><p>2. Pressing firmly, rub the polish directly over the scratch in tight, overlapping circles.</p><p>3. Work the polish in continuously for 1 full minute to smooth the edges of the clear coat.</p>",
+                warning: "Keep the polish off the black painted spokes as much as possible.",
+                timer: 60 // 1 minute working time
+            },
+            {
+                title: "Let it Cure",
+                products: ["Super Resin Polish"],
+                desc: "<p>1. Stop rubbing.</p><p>2. Leave the polish alone to dry into a hazy, white powder.</p><p>3. This allows the resin fillers to bond inside the microscopic valley of the scratch.</p>",
+                warning: null,
+                timer: 600 // 10 minutes curing time
+            },
+            {
+                title: "Buff & Inspect",
+                products: ["Autoglym Finishing Cloth"],
+                desc: "<p>1. Take a clean Autoglym Finishing Cloth.</p><p>2. Briskly buff away the hazy white powder to reveal the finish.</p><p>3. Inspect the scratch. If it's still visible but improved, you may repeat Steps 2-4 one more time.</p>",
+                warning: "Always use a clean finishing cloth to prevent adding new micro-scratches.",
+                timer: null
+            },
+            {
+                title: "Seal the Repair",
+                products: ["Rapid Ceramic Spray", "URAQT Cloth", "Finishing Cloth"],
+                desc: "<p>1. Ensure all polish dust is wiped away.</p><p>2. Apply just <b>one spritz</b> of Ceramic Spray to a clean URAQT cloth.</p><p>3. Wipe it over the repaired area to seal the clear coat.</p><p>4. Buff immediately with the Finishing Cloth.</p><p><b>Alloy Touch Up Complete!</b></p>",
+                warning: "Do not skip this step. The ceramic seals the polish fillers in place.",
+                timer: null
+            }
+        ];
+
+        // --- Q&A Logic for Alloys ---
+        const qaQuestions = [
+            {
+                text: "Run your fingernail gently over the scratch. Does your nail catch sharply in a deep groove?",
+                failOn: true,
+                failMsg: "Your clear coat is heavily breached. Polishing this will not fix it and may widen the damage. A professional wheel re-lathe is required."
+            },
+            {
+                text: "Look closely inside the scratch under a light. Do you see raw, dull grey metal exposed at the bottom?",
+                failOn: true,
+                failMsg: "The scratch has penetrated down to the raw aluminium. Autoglym polish will only get stuck in the groove and make it look worse. Professional repair needed."
+            },
+            {
+                text: "Is there a milky white 'spider web' pattern creeping underneath the clear coat around the scratch?",
+                failOn: true,
+                failMsg: "This is 'White Worm' corrosion. Water has gotten under the lacquer and is oxidising the bare metal. Polishing will strip more lacquer off. Professional refurbishment is strictly required."
+            },
+            {
+                text: "Is the scratch mostly white, hazy, or surface-level (like clear coat transfer or a light scuff)?",
+                failOn: false, // answering false fails
+                failMsg: "If it's not a light surface scuff, Super Resin Polish might not be aggressive enough to fix it, or it may be deeper than it appears. Proceed with extreme caution."
+            }
+        ];
+
+        let currentQAIndex = 0;
+
+        // --- State Management ---
+        let currentStep = 0;
+        let currentSteps = exteriorSteps;
+        let timerInterval;
+        let timeRemaining = 0;
+        let isTimerRunning = false;
+        
+        // Session tracking
+        let isWashActive = false;
+        let activeWashType = '';
+
+        // --- UI Initialization ---
+
+        function init() {
+            renderArsenal();
+            renderHomeActions();
+        }
+
+        function switchView(viewId) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Show target view
+            document.getElementById(viewId).classList.add('active');
+            window.scrollTo(0,0);
+            
+            // If navigating to home, refresh the action buttons
+            if (viewId === 'home') {
+                renderHomeActions();
+            }
+
+            // Pause the timer if navigating away from the active wash view
+            if (viewId !== 'wash' && isTimerRunning) {
+                toggleTimer(); // This safely pauses the interval
+            }
+        }
+
+        function renderHomeActions() {
+            const container = document.getElementById('home-action-buttons');
+            const greeting = document.getElementById('home-greeting');
+            const subtitle = document.getElementById('home-subtitle');
+
+            if (isWashActive) {
+                greeting.innerText = "Session in Progress";
+                if(activeWashType === 'exterior') subtitle.innerText = "Exterior Wash active.";
+                else if(activeWashType === 'interior') subtitle.innerText = "Full Interior Clean active.";
+                else subtitle.innerText = "Alloy Touch Up active.";
+
+                container.innerHTML = `
+                    <div class="flex gap-3">
+                        <button onclick="resumeWash()" class="flex-1 bg-white text-skoda-blue font-bold py-3 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2 text-lg">
+                            <i class="fa-solid fa-play"></i> Resume Session
+                        </button>
+                        <button onclick="confirmCancelWash()" class="bg-gray-900 border border-red-900 text-red-400 px-6 py-3 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center">
+                            <i class="fa-solid fa-trash-can text-xl"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                greeting.innerText = "Ready to Clean?";
+                subtitle.innerText = "Select your detailing mode below.";
+                container.innerHTML = `
+                    <button onclick="startWash('exterior')" class="w-full bg-white text-skoda-blue font-bold py-3 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2 text-lg">
+                        <i class="fa-solid fa-droplet"></i> Exterior Wash
+                    </button>
+                    <button onclick="startWash('interior')" class="w-full bg-gray-900 border border-gray-700 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2 text-lg">
+                        <i class="fa-solid fa-car-side"></i> Full Interior Clean
+                    </button>
+                `;
+            }
+        }
+
+        function renderArsenal() {
+            const list = document.getElementById('product-list');
+            products.forEach(p => {
+                const iconColor = p.type === 'Paint' ? 'text-blue-400' : 
+                                  p.type === 'Wheels' ? 'text-gray-400' : 
+                                  p.type === 'Prep' ? 'text-green-400' : 'text-yellow-400';
+                
+                list.innerHTML += `
+                    <div class="bg-skoda-card border border-gray-800 rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="bg-gray-800 p-2 rounded-lg ${iconColor}">
+                                <i class="fa-solid ${p.icon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-sm leading-tight">${p.name}</h3>
+                                <p class="text-xs text-gray-400">${p.brand}</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3">${p.desc}</p>
+                        <div class="bg-gray-900 rounded-lg p-3 text-xs space-y-2">
+                            <div class="flex gap-2 text-green-400"><i class="fa-solid fa-check mt-0.5"></i> <span>${p.dos}</span></div>
+                            <div class="flex gap-2 text-red-400"><i class="fa-solid fa-xmark mt-0.5"></i> <span>${p.donts}</span></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- Alloy QA Logic ---
+
+        function startAlloyQA() {
+            currentQAIndex = 0;
+            renderQAQuestion();
+            switchView('alloy-qa');
+        }
+
+        function renderQAQuestion() {
+            const q = qaQuestions[currentQAIndex];
+            document.getElementById('qa-counter').innerText = `Question ${currentQAIndex + 1} of ${qaQuestions.length}`;
+            document.getElementById('qa-question').innerText = q.text;
+        }
+
+        function handleQAAnswer(answer) {
+            const q = qaQuestions[currentQAIndex];
+            
+            // Check if they failed the question
+            if (answer === q.failOn) {
+                showQAResult(false, q.failMsg);
+                return;
+            }
+
+            // Move to next or pass
+            if (currentQAIndex < qaQuestions.length - 1) {
+                currentQAIndex++;
+                renderQAQuestion();
+            } else {
+                showQAResult(true, "");
+            }
+        }
+
+        function showQAResult(passed, failMsg) {
+            const container = document.getElementById('alloy-result-content');
+            
+            if (passed) {
+                container.className = "rounded-2xl p-6 shadow-xl border border-green-800 bg-green-900/20 relative overflow-hidden text-center";
+                container.innerHTML = `
+                    <div class="bg-green-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-check text-3xl text-green-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Safe to Restore</h3>
+                    <p class="text-gray-300 text-sm mb-6">Based on your answers, this is a superficial clear coat scuff. It is safe to attempt a home repair using Autoglym Super Resin Polish.</p>
+                    <button onclick="startWash('alloy')" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-colors shadow-md">
+                        Start Restoration Guide
+                    </button>
+                `;
+            } else {
+                container.className = "rounded-2xl p-6 shadow-xl border border-red-900 bg-red-900/20 relative overflow-hidden text-center";
+                container.innerHTML = `
+                    <div class="bg-red-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">DO NOT POLISH</h3>
+                    <p class="text-gray-300 text-sm mb-4">${failMsg}</p>
+                    <p class="text-red-400 text-xs font-bold uppercase tracking-wide">Action: Seek Professional Wheel Refurbishment</p>
+                `;
+            }
+            switchView('alloy-result');
+        }
+
+        // --- Wash Flow Logic ---
+
+        function startWash(type) {
+            isWashActive = true;
+            activeWashType = type;
+            
+            if(type === 'exterior') currentSteps = exteriorSteps;
+            else if(type === 'interior') currentSteps = interiorSteps;
+            else if(type === 'alloy') currentSteps = alloySteps;
+
+            currentStep = 0;
+            
+            updateWashView();
+            switchView('wash');
+        }
+
+        function resumeWash() {
+            switchView('wash');
+        }
+
+        function confirmCancelWash() {
+            document.getElementById('cancel-modal').classList.remove('hidden');
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancel-modal').classList.add('hidden');
+        }
+
+        function executeCancelWash() {
+            closeCancelModal();
+            isWashActive = false;
+            activeWashType = '';
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            renderHomeActions();
+        }
+
+        function updateWashView() {
+            const step = currentSteps[currentStep];
+            
+            // Progress Bar
+            const progress = ((currentStep) / (currentSteps.length - 1)) * 100;
+            document.getElementById('wash-progress').style.width = `${progress}%`;
+            
+            // Text Content
+            document.getElementById('step-counter').innerText = `Step ${currentStep + 1} of ${currentSteps.length}`;
+            document.getElementById('step-title').innerText = step.title;
+            document.getElementById('step-desc').innerHTML = step.desc;
+
+            // Products Chips
+            const productsContainer = document.getElementById('step-products');
+            productsContainer.innerHTML = step.products.map(p => 
+                `<span class="bg-gray-800 border border-gray-700 text-gray-200 text-xs px-3 py-1.5 rounded-full font-medium"><i class="fa-solid fa-flask text-skoda-blue mr-1"></i> ${p}</span>`
+            ).join('');
+
+            // Warning
+            const warningContainer = document.getElementById('step-warning');
+            if(step.warning) {
+                warningContainer.classList.remove('hidden');
+                document.getElementById('step-warning-text').innerText = step.warning;
+            } else {
+                warningContainer.classList.add('hidden');
+            }
+
+            // Buttons
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            const nextBtn = document.getElementById('next-btn');
+            if(currentStep === currentSteps.length - 1) {
+                nextBtn.innerHTML = '<i class="fa-solid fa-check"></i> Finish';
+                nextBtn.classList.replace('bg-white', 'bg-green-500');
+                nextBtn.classList.replace('text-skoda-dark', 'text-white');
+            } else {
+                nextBtn.innerHTML = 'Next Step <i class="fa-solid fa-arrow-right"></i>';
+                nextBtn.classList.replace('bg-green-500', 'bg-white');
+                nextBtn.classList.replace('text-white', 'text-skoda-dark');
+            }
+
+            // Timer setup
+            setupTimerUI(step.timer);
+        }
+
+        function nextStep() {
+            if (currentStep < currentSteps.length - 1) {
+                currentStep++;
+                updateWashView();
+                window.scrollTo(0,0);
+            } else {
+                // Finish sequence
+                isWashActive = false;
+                activeWashType = '';
+                renderHomeActions();
+                switchView('home'); 
+                currentStep = 0;
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateWashView();
+                window.scrollTo(0,0);
+            }
+        }
+
+        // --- Timer Logic ---
+
+        let initialTime = 0;
+
+        function setupTimerUI(seconds) {
+            const container = document.getElementById('timer-container');
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            
+            if(seconds) {
+                container.classList.remove('hidden');
+                initialTime = seconds;
+                timeRemaining = seconds;
+                updateTimerDisplay();
+                document.getElementById('timer-btn-text').innerText = 'Start Timer';
+                document.getElementById('timer-icon').classList.replace('fa-pause', 'fa-play');
+                document.getElementById('timer-btn').classList.replace('bg-yellow-600', 'bg-skoda-blue');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function toggleTimer() {
+            const btnText = document.getElementById('timer-btn-text');
+            const icon = document.getElementById('timer-icon');
+            const btn = document.getElementById('timer-btn');
+
+            if(isTimerRunning) {
+                // Pause it
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                btnText.innerText = 'Resume';
+                icon.classList.replace('fa-pause', 'fa-play');
+                btn.classList.replace('bg-yellow-600', 'bg-skoda-blue');
+            } else {
+                // Start/Resume it
+                if(timeRemaining <= 0) timeRemaining = initialTime;
+                isTimerRunning = true;
+                btnText.innerText = 'Pause';
+                icon.classList.replace('fa-play', 'fa-pause');
+                btn.classList.replace('bg-skoda-blue', 'bg-yellow-600');
+                
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                    
+                    if(timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        btnText.innerText = 'Timer Done!';
+                        icon.classList.replace('fa-pause', 'fa-bell');
+                        btn.classList.replace('bg-yellow-600', 'bg-green-500');
+                        // Vibrate if mobile supports it
+                        if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timeRemaining = initialTime;
+            updateTimerDisplay();
+            document.getElementById('timer-btn-text').innerText = 'Start Timer';
+            document.getElementById('timer-icon').className = 'fa-solid fa-play';
+            document.getElementById('timer-btn').className = 'flex-1 bg-skoda-blue text-white py-2 rounded-lg font-bold active:bg-blue-700 flex justify-center items-center gap-2';
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const s = (timeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${m}:${s}`;
+        }
+
+        // Start app
+        init();
+
+    </script>
+</body>
+</html>
