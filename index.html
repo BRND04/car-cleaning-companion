@@ -218,8 +218,13 @@
 
             <!-- Step Content -->
             <div class="flex-1 bg-skoda-card rounded-2xl p-5 border border-gray-800 shadow-xl mb-6 relative">
-                <span id="step-counter" class="absolute -top-3 left-4 bg-gray-900 text-gray-400 text-xs font-bold px-3 py-1 rounded-full border border-gray-700">Step 1 of 9</span>
+                <span id="step-counter" class="absolute -top-3 left-4 bg-gray-900 text-gray-400 text-xs font-bold px-3 py-1 rounded-full border border-gray-700 z-10">Step 1 of 9</span>
                 
+                <!-- Dynamic Image Container (Updated to 16:9 Aspect Ratio) -->
+                <div id="step-image-container" class="w-full aspect-video rounded-xl bg-gray-900 mb-5 overflow-hidden border border-gray-700 hidden">
+                    <img id="step-image" src="" alt="Step visual" class="w-full h-full object-cover opacity-90">
+                </div>
+
                 <h2 id="step-title" class="text-2xl font-bold mt-2 mb-4 text-white">Title</h2>
                 
                 <!-- Products Used Chips -->
@@ -302,6 +307,7 @@
         const exteriorSteps = [
             {
                 title: "Hose Setup & Mains Water",
+                image: "STEP_1.png",
                 products: ["Hozelock Hose", "Restmo Gun"],
                 desc: "<p>1. Unroll the empty hose completely and walk the spray gun over to the car.</p><p>2. Go back to the wall and turn the tap fully ON, then a half-turn back (relieves pressure).</p><p>3. Squeeze the spray gun trigger to bleed out the initial air.</p>",
                 warning: "Never turn on the water while the hose is piled up—it will knot instantly.",
@@ -309,6 +315,7 @@
             },
             {
                 title: "Setup & Prep",
+                image: "STEP_2.png",
                 products: ["Halfords Buckets", "Grit Guards", "UHD Shampoo"],
                 desc: "<p>1. Place Grit Guards in both buckets.</p><p>2. Fill 'Rinse' bucket with plain cold water.</p><p>3. Pour 2 capfuls of UHD Shampoo into 'Wash' bucket. Blast with hose to create thick foam.</p>",
                 warning: null,
@@ -316,13 +323,15 @@
             },
             {
                 title: "Wheels & Tyres First",
+                image: "STEP_3.png",
                 products: ["All Wheel Cleaner", "Wheel Brush", "Turtle Wax Mitt"],
-                desc: "<p>1. Ensure alloys are cool to the touch.</p><p>2. Spray Wheel Cleaner generously onto dry wheels.</p><p>3. Wait 3 minutes (until it bleeds purple). Agitate with brush/mitt.</p><p>4. Hose off thoroughly.</p>",
+                desc: "<p>1. Ensure alloys are cool.</p><p>2. <b>Pre-Rinse:</b> Blast the wheel with the hose first to remove sharp, loose grit.</p><p>3. Spray Wheel Cleaner generously onto the wet wheel and wait 3 mins.</p><p>4. <b>Lubricated Wash:</b> Without rinsing the cleaner off, dip your Turtle Wax mitt into the soapy Wash bucket and gently wash the wheel <i>over</i> the active chemical.</p><p>5. Final thorough hose rinse.</p>",
                 warning: "Use ONLY the Turtle Wax Mitt here. Keep it away from paint.",
                 timer: 180 // 3 mins
             },
             {
                 title: "The Pre-Rinse",
+                image: "STEP_4.png",
                 products: ["Garden Hose"],
                 desc: "<p>1. Attach spray nozzle to hose.</p><p>2. Blast the entire car from the roof down.</p><p>3. Spend 5 minutes removing all loose grit, mud, and salt.</p>",
                 warning: "Never touch dry paint with a wash mitt. Pre-rinse is critical.",
@@ -330,6 +339,7 @@
             },
             {
                 title: "The Contact Wash",
+                image: "STEP_5.png",
                 products: ["Halfords Wash Mitt", "UHD Shampoo"],
                 desc: "<p>1. Dip the Halfords mitt into soapy Wash bucket.</p><p>2. Wash ONE panel gently from the top down.</p><p>3. Scrub mitt in plain Rinse bucket.</p><p>4. Wring out, dip in Wash bucket, do next panel.</p>",
                 warning: "Keep strokes in straight lines, avoid heavy circular scrubbing.",
@@ -337,6 +347,7 @@
             },
             {
                 title: "The Sheeting Rinse",
+                image: "STEP_6.png",
                 products: ["Garden Hose"],
                 desc: "<p>1. Remove the spray nozzle from your hose.</p><p>2. Let the water cascade gently out of the open pipe over the roof and bonnet.</p><p>3. The water will sheet together and glide off, leaving very little behind.</p>",
                 warning: null,
@@ -344,6 +355,7 @@
             },
             {
                 title: "Safe Drying",
+                image: "STEP_7.png",
                 products: ["Turtle Wax Drying Towel"],
                 desc: "<p>1. Lay towel flat on wet panels.</p><p>2. Hold two corners and slowly pull it across the surface to drag water off.</p><p>3. Gently pat dry any remaining drops or crevices.</p>",
                 warning: "Do not scrub the paint with the towel.",
@@ -351,6 +363,7 @@
             },
             {
                 title: "Polish (Optional: 3-6 Months)",
+                image: "STEP_8.png",
                 products: ["Super Resin Polish", "URAQT Cloth", "Autoglym Finishing Cloth"],
                 desc: "<p><i>Skip if paint is already glossy/swirl-free.</i></p><p>1. Apply pea-sized drop to URAQT cloth.</p><p>2. Work into dry paint in tight circles.</p><p>3. Wait 10 mins to haze, then buff off with Autoglym Finishing Cloth.</p>",
                 warning: "Does not fix deep metal scratches on diamond cut alloys.",
@@ -358,6 +371,7 @@
             },
             {
                 title: "Ceramic Protection",
+                image: "STEP_9.png",
                 products: ["Rapid Ceramic Spray", "URAQT Cloth", "Autoglym Finishing Cloth"],
                 desc: "<p>1. Ensure panel is 100% dry.</p><p>2. Spray 1-2 spritzes maximum onto panel.</p><p>3. Spread evenly with URAQT cloth.</p><p>4. IMMEDIATELY buff to high shine with dry Autoglym Finishing Cloth.</p>",
                 warning: "Do not let it air dry. Do not apply to glass.",
@@ -365,6 +379,7 @@
             },
             {
                 title: "Glass & Tyres",
+                image: "STEP_10.png",
                 products: ["Fast Glass", "Instant Tyre Dressing", "Spontex/Turtle Cloths"],
                 desc: "<p>1. Spray Tyre Dressing on dry rubber. Let air dry for gloss, or wipe for matte.</p><p>2. Spray Fast Glass on windows, wipe streak-free with Turtle Wax cloth.</p>",
                 warning: "Keep tyre dressing completely off the lacquered alloy faces.",
@@ -691,6 +706,15 @@
             document.getElementById('step-counter').innerText = `Step ${currentStep + 1} of ${currentSteps.length}`;
             document.getElementById('step-title').innerText = step.title;
             document.getElementById('step-desc').innerHTML = step.desc;
+
+            // Optional Step Image
+            const imgContainer = document.getElementById('step-image-container');
+            if (step.image) {
+                imgContainer.classList.remove('hidden');
+                document.getElementById('step-image').src = step.image;
+            } else {
+                imgContainer.classList.add('hidden');
+            }
 
             // Products Chips
             const productsContainer = document.getElementById('step-products');
