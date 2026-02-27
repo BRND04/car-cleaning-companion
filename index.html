@@ -31,7 +31,7 @@
         .view-section {
             display: none !important;
             animation: fadeIn 0.3s ease-in-out;
-            padding-bottom: 80px; /* Space for bottom nav */
+            padding-bottom: 90px; /* Space for bottom nav */
         }
         .view-section.active {
             display: block !important;
@@ -39,6 +39,7 @@
         #wash.view-section.active {
             display: flex !important;
             flex-direction: column;
+            padding-bottom: 0px; /* Wash has its own bottom bar */
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -47,8 +48,9 @@
         .bottom-bar {
             padding-bottom: env(safe-area-inset-bottom);
         }
-        .timer-circle {
-            transition: stroke-dashoffset 1s linear;
+        /* Custom inputs for tracker */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
         }
         /* Custom Scrollbar for sleekness */
         ::-webkit-scrollbar { width: 6px; }
@@ -65,9 +67,7 @@
                 <i class="fa-solid fa-car-side text-skoda-blue text-xl"></i>
                 <h1 class="font-bold text-lg tracking-wide">Monte Carlo Detailer</h1>
             </div>
-            <button id="home-btn" class="text-gray-400 hover:text-white transition-colors" onclick="switchView('home')">
-                <i class="fa-solid fa-house text-xl"></i>
-            </button>
+            <!-- Header Home button removed, replaced by Main Bottom Nav -->
         </div>
     </header>
 
@@ -76,6 +76,10 @@
 
         <!-- ================= HOME VIEW ================= -->
         <div id="home" class="view-section active px-4 py-6 space-y-6">
+            
+            <!-- Dashboard Alerts (Populated dynamically) -->
+            <div id="dashboard-alerts" class="space-y-3 empty:hidden"></div>
+
             <div class="bg-gradient-to-br from-skoda-blue to-blue-900 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden">
                 <div class="relative z-10" id="home-content">
                     <h2 class="text-2xl font-bold mb-2" id="home-greeting">Ready to Clean?</h2>
@@ -117,6 +121,56 @@
                 </div>
                 <i class="fa-solid fa-chevron-right text-gray-600"></i>
             </button>
+        </div>
+
+        <!-- ================= SCHEDULE VIEW ================= -->
+        <div id="schedule" class="view-section px-4 py-6 space-y-6">
+            <h2 class="text-2xl font-bold flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-calendar-check text-skoda-blue"></i> Maintenance Tracker
+            </h2>
+            <p class="text-sm text-gray-400 mb-6">Keep your Kamiq's protection performing at its peak. Frequencies can be adjusted below.</p>
+
+            <!-- Exterior Tracker Card -->
+            <div class="bg-skoda-card border border-gray-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-gray-800 p-3 rounded-full text-blue-400"><i class="fa-solid fa-droplet text-lg"></i></div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg">Exterior Wash</h3>
+                        <div id="ext-status-badge" class="text-xs font-bold px-2 py-0.5 rounded mt-1 inline-block bg-gray-700 text-gray-300">Status</div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-700">
+                        <span class="text-sm text-gray-300 font-medium">Last Washed:</span>
+                        <input type="date" id="ext-date" onchange="updateTracker('exterior', 'date', this.value)" class="bg-transparent text-white text-sm outline-none font-bold text-right cursor-pointer">
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-700">
+                        <span class="text-sm text-gray-300 font-medium">Wash Every (Days):</span>
+                        <input type="number" id="ext-freq" min="1" max="365" onchange="updateTracker('exterior', 'freq', this.value)" class="bg-transparent text-white text-sm outline-none font-bold text-right w-16">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interior Tracker Card -->
+            <div class="bg-skoda-card border border-gray-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-gray-800 p-3 rounded-full text-purple-400"><i class="fa-solid fa-car-side text-lg"></i></div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg">Interior Clean</h3>
+                        <div id="int-status-badge" class="text-xs font-bold px-2 py-0.5 rounded mt-1 inline-block bg-gray-700 text-gray-300">Status</div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-700">
+                        <span class="text-sm text-gray-300 font-medium">Last Cleaned:</span>
+                        <input type="date" id="int-date" onchange="updateTracker('interior', 'date', this.value)" class="bg-transparent text-white text-sm outline-none font-bold text-right cursor-pointer">
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-700">
+                        <span class="text-sm text-gray-300 font-medium">Clean Every (Days):</span>
+                        <input type="number" id="int-freq" min="1" max="365" onchange="updateTracker('interior', 'freq', this.value)" class="bg-transparent text-white text-sm outline-none font-bold text-right w-16">
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ================= ALLOY QA VIEW ================= -->
@@ -220,7 +274,7 @@
             <div class="flex-1 bg-skoda-card rounded-2xl p-5 border border-gray-800 shadow-xl mb-6 relative">
                 <span id="step-counter" class="absolute -top-3 left-4 bg-gray-900 text-gray-400 text-xs font-bold px-3 py-1 rounded-full border border-gray-700 z-10">Step 1 of 9</span>
                 
-                <!-- Dynamic Image Container (Updated to 16:9 Aspect Ratio) -->
+                <!-- Dynamic Image Container -->
                 <div id="step-image-container" class="w-full aspect-video rounded-xl bg-gray-900 mb-5 overflow-hidden border border-gray-700 hidden">
                     <img id="step-image" src="" alt="Step visual" class="w-full h-full object-cover opacity-90">
                 </div>
@@ -271,7 +325,22 @@
 
         </div>
 
-        <!-- ================= CANCEL MODAL ================= -->
+        <!-- ================= MAIN BOTTOM NAVIGATION ================= -->
+        <nav id="main-nav" class="fixed bottom-0 left-0 w-full bg-skoda-card border-t border-gray-800 z-40 bottom-bar shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+            <div class="max-w-md mx-auto flex justify-around">
+                <button id="nav-home" onclick="switchView('home')" class="flex-1 py-4 flex flex-col items-center gap-1 text-skoda-blue font-bold transition-colors">
+                    <i class="fa-solid fa-house text-xl"></i>
+                    <span class="text-xs">Home</span>
+                </button>
+                <button id="nav-schedule" onclick="switchView('schedule')" class="flex-1 py-4 flex flex-col items-center gap-1 text-gray-500 hover:text-gray-300 transition-colors">
+                    <i class="fa-solid fa-calendar-check text-xl"></i>
+                    <span class="text-xs">Schedule</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ================= MODALS ================= -->
+        <!-- Cancel Modal -->
         <div id="cancel-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
             <div class="bg-skoda-card border border-gray-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
                 <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
@@ -285,11 +354,29 @@
             </div>
         </div>
 
+        <!-- Finish & Track Modal -->
+        <div id="finish-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+            <div class="bg-skoda-card border border-gray-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center">
+                <div class="bg-green-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-check text-3xl text-green-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Detailing Complete!</h3>
+                <p class="text-gray-300 text-sm mb-6" id="finish-modal-text">Do you want to log this wash in your tracker to automatically reset the countdown?</p>
+                <div class="space-y-3">
+                    <button onclick="finishAndTrack(true)" class="w-full bg-skoda-blue text-white font-bold py-3 rounded-xl active:bg-blue-700 transition-colors shadow-md">
+                        Yes, Log in Tracker
+                    </button>
+                    <button onclick="finishAndTrack(false)" class="w-full bg-gray-800 text-white font-bold py-3 rounded-xl active:bg-gray-700 transition-colors">
+                        No, Just Finish
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
         // --- Data Definitions ---
-
         const products = [
             { brand: "Autoglym", name: "UHD Shampoo", icon: "fa-soap", type: "Paint", desc: "Pure, high-foaming pH-neutral soap. Leaves paint bare for ceramic spray.", dos: "Use 2 capfuls in 20L Wash Bucket.", donts: "Never apply to dry paint." },
             { brand: "Autoglym", name: "Advanced All Wheel Cleaner", icon: "fa-dharmachakra", type: "Wheels", desc: "Color-changing, pH-neutral iron fallout remover. Safe for diamond cut alloys.", dos: "Spray on dry, cool wheels. Let dwell 3-5 mins.", donts: "Do not let it dry on the wheel." },
@@ -470,68 +557,155 @@
             }
         ];
 
-        // --- Q&A Logic for Alloys ---
         const qaQuestions = [
-            {
-                text: "Run your fingernail gently over the scratch. Does your nail catch sharply in a deep groove?",
-                failOn: true,
-                failMsg: "Your clear coat is heavily breached. Polishing this will not fix it and may widen the damage. A professional wheel re-lathe is required."
-            },
-            {
-                text: "Look closely inside the scratch under a light. Do you see raw, dull grey metal exposed at the bottom?",
-                failOn: true,
-                failMsg: "The scratch has penetrated down to the raw aluminium. Autoglym polish will only get stuck in the groove and make it look worse. Professional repair needed."
-            },
-            {
-                text: "Is there a milky white 'spider web' pattern creeping underneath the clear coat around the scratch?",
-                failOn: true,
-                failMsg: "This is 'White Worm' corrosion. Water has gotten under the lacquer and is oxidising the bare metal. Polishing will strip more lacquer off. Professional refurbishment is strictly required."
-            },
-            {
-                text: "Is the scratch mostly white, hazy, or surface-level (like clear coat transfer or a light scuff)?",
-                failOn: false, // answering false fails
-                failMsg: "If it's not a light surface scuff, Super Resin Polish might not be aggressive enough to fix it, or it may be deeper than it appears. Proceed with extreme caution."
-            }
+            { text: "Run your fingernail gently over the scratch. Does your nail catch sharply in a deep groove?", failOn: true, failMsg: "Your clear coat is heavily breached. Polishing this will not fix it and may widen the damage. A professional wheel re-lathe is required." },
+            { text: "Look closely inside the scratch under a light. Do you see raw, dull grey metal exposed at the bottom?", failOn: true, failMsg: "The scratch has penetrated down to the raw aluminium. Autoglym polish will only get stuck in the groove and make it look worse. Professional repair needed." },
+            { text: "Is there a milky white 'spider web' pattern creeping underneath the clear coat around the scratch?", failOn: true, failMsg: "This is 'White Worm' corrosion. Water has gotten under the lacquer and is oxidising the bare metal. Polishing will strip more lacquer off. Professional refurbishment is strictly required." },
+            { text: "Is the scratch mostly white, hazy, or surface-level (like clear coat transfer or a light scuff)?", failOn: false, failMsg: "If it's not a light surface scuff, Super Resin Polish might not be aggressive enough to fix it, or it may be deeper than it appears. Proceed with extreme caution." }
         ];
 
-        let currentQAIndex = 0;
+        // --- Tracker State ---
+        let trackerData = {
+            exterior: { date: "", freq: 14 },
+            interior: { date: "", freq: 30 }
+        };
 
-        // --- State Management ---
+        // --- Core State ---
+        let currentQAIndex = 0;
         let currentStep = 0;
         let currentSteps = exteriorSteps;
         let timerInterval;
         let timeRemaining = 0;
         let isTimerRunning = false;
-        
-        // Session tracking
         let isWashActive = false;
         let activeWashType = '';
 
-        // --- UI Initialization ---
-
+        // --- Initialization ---
         function init() {
+            loadTrackerData();
             renderArsenal();
             renderHomeActions();
         }
 
-        function switchView(viewId) {
-            // Hide all views
-            document.querySelectorAll('.view-section').forEach(el => {
-                el.classList.remove('active');
+        // --- Tracker Logic ---
+        function loadTrackerData() {
+            const saved = localStorage.getItem('kamiqTracker');
+            if (saved) {
+                trackerData = JSON.parse(saved);
+            }
+            renderSchedule();
+            renderDashboardAlerts();
+        }
+
+        function saveTrackerData() {
+            localStorage.setItem('kamiqTracker', JSON.stringify(trackerData));
+            renderSchedule();
+            renderDashboardAlerts();
+        }
+
+        function updateTracker(type, field, value) {
+            if (field === 'freq') {
+                trackerData[type].freq = parseInt(value) || (type === 'exterior' ? 14 : 30);
+            } else if (field === 'date') {
+                trackerData[type].date = value;
+            }
+            saveTrackerData();
+        }
+
+        function getTodayString() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function getDueStatus(type) {
+            const data = trackerData[type];
+            if (!data.date) return { status: 'none', daysLeft: 0 };
+
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const lastWash = new Date(data.date);
+            lastWash.setHours(0,0,0,0);
+            
+            const diffTime = today - lastWash;
+            const daysSince = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const daysLeft = data.freq - daysSince;
+
+            if (daysLeft < 0) return { status: 'overdue', daysLeft: Math.abs(daysLeft) };
+            if (daysLeft === 0) return { status: 'due', daysLeft: 0 };
+            return { status: 'good', daysLeft: daysLeft };
+        }
+
+        function renderSchedule() {
+            ['exterior', 'interior'].forEach(type => {
+                const data = trackerData[type];
+                const prefix = type === 'exterior' ? 'ext' : 'int';
+                
+                document.getElementById(`${prefix}-date`).value = data.date;
+                document.getElementById(`${prefix}-freq`).value = data.freq;
+
+                const status = getDueStatus(type);
+                const badge = document.getElementById(`${prefix}-status-badge`);
+                
+                if (status.status === 'none') {
+                    badge.innerText = "No data yet";
+                    badge.className = "text-xs font-bold px-2 py-0.5 rounded mt-1 inline-block bg-gray-700 text-gray-300";
+                } else if (status.status === 'overdue') {
+                    badge.innerText = `Overdue by ${status.daysLeft} days`;
+                    badge.className = "text-xs font-bold px-2 py-0.5 rounded mt-1 inline-block bg-red-900/50 text-red-400 border border-red-800";
+                } else if (status.status === 'due') {
+                    badge.innerText = `Due today`;
+                    badge.className = "text-xs font-bold px-2 py-0.5 rounded mt-1 inline-block bg-yellow-900/50 text-yellow-400 border border-yellow-800";
+                } else {
+                    badge.innerText = `Due in ${status.daysLeft} days`;
+                    badge.className = "text-xs font-bold px-2 py-0.5 rounded mt-1 inline-block bg-green-900/50 text-green-400 border border-green-800";
+                }
             });
-            // Show target view
+        }
+
+        function renderDashboardAlerts() {
+            const container = document.getElementById('dashboard-alerts');
+            container.innerHTML = ''; // Clear existing
+            
+            ['exterior', 'interior'].forEach(type => {
+                const status = getDueStatus(type);
+                if (status.status === 'overdue' || status.status === 'due') {
+                    const title = type === 'exterior' ? 'Exterior Wash' : 'Interior Clean';
+                    const icon = type === 'exterior' ? 'fa-droplet' : 'fa-car-side';
+                    const msg = status.status === 'due' ? 'is due today.' : `is overdue by ${status.daysLeft} days.`;
+                    const colorClass = status.status === 'overdue' ? 'text-red-400 border-red-900/50 bg-red-900/10' : 'text-yellow-400 border-yellow-900/50 bg-yellow-900/10';
+                    
+                    container.innerHTML += `
+                        <div class="border rounded-xl p-3 flex items-center gap-3 ${colorClass}">
+                            <i class="fa-solid ${icon} text-lg"></i>
+                            <div class="text-sm"><span class="font-bold">${title}</span> ${msg}</div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // --- Navigation Logic ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
             window.scrollTo(0,0);
             
-            // If navigating to home, refresh the action buttons
-            if (viewId === 'home') {
-                renderHomeActions();
+            // Bottom Nav State
+            const mainNav = document.getElementById('main-nav');
+            if (viewId === 'wash' || viewId === 'alloy-qa' || viewId === 'alloy-result') {
+                mainNav.classList.add('hidden'); // Hide main nav during active tasks
+            } else {
+                mainNav.classList.remove('hidden');
+                document.getElementById('nav-home').className = `flex-1 py-4 flex flex-col items-center gap-1 transition-colors ${viewId === 'home' || viewId === 'arsenal' || viewId === 'methods' ? 'text-skoda-blue font-bold' : 'text-gray-500 hover:text-gray-300'}`;
+                document.getElementById('nav-schedule').className = `flex-1 py-4 flex flex-col items-center gap-1 transition-colors ${viewId === 'schedule' ? 'text-skoda-blue font-bold' : 'text-gray-500 hover:text-gray-300'}`;
             }
 
-            // Pause the timer if navigating away from the active wash view
-            if (viewId !== 'wash' && isTimerRunning) {
-                toggleTimer(); // This safely pauses the interval
-            }
+            if (viewId === 'home') renderHomeActions();
+
+            if (viewId !== 'wash' && isTimerRunning) toggleTimer(); // Pause timer safely
         }
 
         function renderHomeActions() {
@@ -569,19 +743,15 @@
             }
         }
 
+        // --- Arsenal rendering ---
         function renderArsenal() {
             const list = document.getElementById('product-list');
             products.forEach(p => {
-                const iconColor = p.type === 'Paint' ? 'text-blue-400' : 
-                                  p.type === 'Wheels' ? 'text-gray-400' : 
-                                  p.type === 'Prep' ? 'text-green-400' : 'text-yellow-400';
-                
+                const iconColor = p.type === 'Paint' ? 'text-blue-400' : p.type === 'Wheels' ? 'text-gray-400' : p.type === 'Prep' ? 'text-green-400' : 'text-yellow-400';
                 list.innerHTML += `
                     <div class="bg-skoda-card border border-gray-800 rounded-xl p-4 shadow-sm">
                         <div class="flex items-center gap-3 mb-2">
-                            <div class="bg-gray-800 p-2 rounded-lg ${iconColor}">
-                                <i class="fa-solid ${p.icon}"></i>
-                            </div>
+                            <div class="bg-gray-800 p-2 rounded-lg ${iconColor}"><i class="fa-solid ${p.icon}"></i></div>
                             <div>
                                 <h3 class="font-bold text-white text-sm leading-tight">${p.name}</h3>
                                 <p class="text-xs text-gray-400">${p.brand}</p>
@@ -598,58 +768,36 @@
         }
 
         // --- Alloy QA Logic ---
-
         function startAlloyQA() {
             currentQAIndex = 0;
             renderQAQuestion();
             switchView('alloy-qa');
         }
-
         function renderQAQuestion() {
             const q = qaQuestions[currentQAIndex];
             document.getElementById('qa-counter').innerText = `Question ${currentQAIndex + 1} of ${qaQuestions.length}`;
             document.getElementById('qa-question').innerText = q.text;
         }
-
         function handleQAAnswer(answer) {
             const q = qaQuestions[currentQAIndex];
-            
-            // Check if they failed the question
-            if (answer === q.failOn) {
-                showQAResult(false, q.failMsg);
-                return;
-            }
-
-            // Move to next or pass
-            if (currentQAIndex < qaQuestions.length - 1) {
-                currentQAIndex++;
-                renderQAQuestion();
-            } else {
-                showQAResult(true, "");
-            }
+            if (answer === q.failOn) { showQAResult(false, q.failMsg); return; }
+            if (currentQAIndex < qaQuestions.length - 1) { currentQAIndex++; renderQAQuestion(); } 
+            else { showQAResult(true, ""); }
         }
-
         function showQAResult(passed, failMsg) {
             const container = document.getElementById('alloy-result-content');
-            
             if (passed) {
                 container.className = "rounded-2xl p-6 shadow-xl border border-green-800 bg-green-900/20 relative overflow-hidden text-center";
                 container.innerHTML = `
-                    <div class="bg-green-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-check text-3xl text-green-400"></i>
-                    </div>
+                    <div class="bg-green-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-check text-3xl text-green-400"></i></div>
                     <h3 class="text-xl font-bold text-white mb-2">Safe to Restore</h3>
                     <p class="text-gray-300 text-sm mb-6">Based on your answers, this is a superficial clear coat scuff. It is safe to attempt a home repair using Autoglym Super Resin Polish.</p>
-                    <button onclick="startWash('alloy')" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-colors shadow-md">
-                        Start Restoration Guide
-                    </button>
+                    <button onclick="startWash('alloy')" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-colors shadow-md">Start Restoration Guide</button>
                 `;
             } else {
                 container.className = "rounded-2xl p-6 shadow-xl border border-red-900 bg-red-900/20 relative overflow-hidden text-center";
                 container.innerHTML = `
-                    <div class="bg-red-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500"></i>
-                    </div>
+                    <div class="bg-red-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-triangle-exclamation text-3xl text-red-500"></i></div>
                     <h3 class="text-xl font-bold text-white mb-2">DO NOT POLISH</h3>
                     <p class="text-gray-300 text-sm mb-4">${failMsg}</p>
                     <p class="text-red-400 text-xs font-bold uppercase tracking-wide">Action: Seek Professional Wheel Refurbishment</p>
@@ -659,33 +807,20 @@
         }
 
         // --- Wash Flow Logic ---
-
         function startWash(type) {
             isWashActive = true;
             activeWashType = type;
-            
             if(type === 'exterior') currentSteps = exteriorSteps;
             else if(type === 'interior') currentSteps = interiorSteps;
             else if(type === 'alloy') currentSteps = alloySteps;
-
             currentStep = 0;
-            
             updateWashView();
             switchView('wash');
         }
 
-        function resumeWash() {
-            switchView('wash');
-        }
-
-        function confirmCancelWash() {
-            document.getElementById('cancel-modal').classList.remove('hidden');
-        }
-
-        function closeCancelModal() {
-            document.getElementById('cancel-modal').classList.add('hidden');
-        }
-
+        function resumeWash() { switchView('wash'); }
+        function confirmCancelWash() { document.getElementById('cancel-modal').classList.remove('hidden'); }
+        function closeCancelModal() { document.getElementById('cancel-modal').classList.add('hidden'); }
         function executeCancelWash() {
             closeCancelModal();
             isWashActive = false;
@@ -697,32 +832,23 @@
 
         function updateWashView() {
             const step = currentSteps[currentStep];
-            
-            // Progress Bar
-            const progress = ((currentStep) / (currentSteps.length - 1)) * 100;
-            document.getElementById('wash-progress').style.width = `${progress}%`;
-            
-            // Text Content
+            document.getElementById('wash-progress').style.width = `${((currentStep) / (currentSteps.length - 1)) * 100}%`;
             document.getElementById('step-counter').innerText = `Step ${currentStep + 1} of ${currentSteps.length}`;
             document.getElementById('step-title').innerText = step.title;
             document.getElementById('step-desc').innerHTML = step.desc;
 
-            // Optional Step Image
             const imgContainer = document.getElementById('step-image-container');
-            if (step.image) {
+            if (step.image && step.image !== "YOUR_LINK_FOR_STEP_1_HERE") {
                 imgContainer.classList.remove('hidden');
                 document.getElementById('step-image').src = step.image;
             } else {
                 imgContainer.classList.add('hidden');
             }
 
-            // Products Chips
-            const productsContainer = document.getElementById('step-products');
-            productsContainer.innerHTML = step.products.map(p => 
+            document.getElementById('step-products').innerHTML = step.products.map(p => 
                 `<span class="bg-gray-800 border border-gray-700 text-gray-200 text-xs px-3 py-1.5 rounded-full font-medium"><i class="fa-solid fa-flask text-skoda-blue mr-1"></i> ${p}</span>`
             ).join('');
 
-            // Warning
             const warningContainer = document.getElementById('step-warning');
             if(step.warning) {
                 warningContainer.classList.remove('hidden');
@@ -731,7 +857,6 @@
                 warningContainer.classList.add('hidden');
             }
 
-            // Buttons
             document.getElementById('prev-btn').disabled = currentStep === 0;
             const nextBtn = document.getElementById('next-btn');
             if(currentStep === currentSteps.length - 1) {
@@ -743,8 +868,6 @@
                 nextBtn.classList.replace('bg-green-500', 'bg-white');
                 nextBtn.classList.replace('text-white', 'text-skoda-dark');
             }
-
-            // Timer setup
             setupTimerUI(step.timer);
         }
 
@@ -754,12 +877,13 @@
                 updateWashView();
                 window.scrollTo(0,0);
             } else {
-                // Finish sequence
-                isWashActive = false;
-                activeWashType = '';
-                renderHomeActions();
-                switchView('home'); 
-                currentStep = 0;
+                // We reached the end of the wash. Show the tracker prompt if it's ext or int.
+                if (activeWashType === 'exterior' || activeWashType === 'interior') {
+                    showFinishModal();
+                } else {
+                    // Alloy touch up doesn't track, just finish
+                    finishAndTrack(false); 
+                }
             }
         }
 
@@ -771,15 +895,34 @@
             }
         }
 
+        // --- Tracking Finish Modal ---
+        function showFinishModal() {
+            const txt = activeWashType === 'exterior' ? 'Exterior Wash' : 'Interior Clean';
+            document.getElementById('finish-modal-text').innerText = `Do you want to log this ${txt} in your tracker to automatically reset the countdown?`;
+            document.getElementById('finish-modal').classList.remove('hidden');
+        }
+
+        function finishAndTrack(shouldTrack) {
+            document.getElementById('finish-modal').classList.add('hidden');
+            
+            if (shouldTrack && (activeWashType === 'exterior' || activeWashType === 'interior')) {
+                updateTracker(activeWashType, 'date', getTodayString());
+            }
+
+            isWashActive = false;
+            activeWashType = '';
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            
+            switchView('home');
+            currentStep = 0;
+        }
+
         // --- Timer Logic ---
-
-        let initialTime = 0;
-
         function setupTimerUI(seconds) {
             const container = document.getElementById('timer-container');
             clearInterval(timerInterval);
             isTimerRunning = false;
-            
             if(seconds) {
                 container.classList.remove('hidden');
                 initialTime = seconds;
@@ -792,44 +935,36 @@
                 container.classList.add('hidden');
             }
         }
-
         function toggleTimer() {
             const btnText = document.getElementById('timer-btn-text');
             const icon = document.getElementById('timer-icon');
             const btn = document.getElementById('timer-btn');
-
             if(isTimerRunning) {
-                // Pause it
                 clearInterval(timerInterval);
                 isTimerRunning = false;
                 btnText.innerText = 'Resume';
                 icon.classList.replace('fa-pause', 'fa-play');
                 btn.classList.replace('bg-yellow-600', 'bg-skoda-blue');
             } else {
-                // Start/Resume it
                 if(timeRemaining <= 0) timeRemaining = initialTime;
                 isTimerRunning = true;
                 btnText.innerText = 'Pause';
                 icon.classList.replace('fa-play', 'fa-pause');
                 btn.classList.replace('bg-skoda-blue', 'bg-yellow-600');
-                
                 timerInterval = setInterval(() => {
                     timeRemaining--;
                     updateTimerDisplay();
-                    
                     if(timeRemaining <= 0) {
                         clearInterval(timerInterval);
                         isTimerRunning = false;
                         btnText.innerText = 'Timer Done!';
                         icon.classList.replace('fa-pause', 'fa-bell');
                         btn.classList.replace('bg-yellow-600', 'bg-green-500');
-                        // Vibrate if mobile supports it
                         if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
                     }
                 }, 1000);
             }
         }
-
         function resetTimer() {
             clearInterval(timerInterval);
             isTimerRunning = false;
@@ -839,7 +974,6 @@
             document.getElementById('timer-icon').className = 'fa-solid fa-play';
             document.getElementById('timer-btn').className = 'flex-1 bg-skoda-blue text-white py-2 rounded-lg font-bold active:bg-blue-700 flex justify-center items-center gap-2';
         }
-
         function updateTimerDisplay() {
             const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
             const s = (timeRemaining % 60).toString().padStart(2, '0');
@@ -848,7 +982,6 @@
 
         // Start app
         init();
-
     </script>
 </body>
 </html>
